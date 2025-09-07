@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= result.title %></title>
+</head>
+<body>
+    <h1><%= result.title %></h1>
+    <p><strong>Generated on:</strong> <%= result.createdAt.toDateString() %></p>
+
+    <h2>📝 Summary</h2>
+    <p><%= result.summary %></p>
+
+    <h2>📚 Flashcards</h2>
+    <pre><%= result.flashcards %></pre>
+
+    <h2>❓ Quiz</h2>
+    <pre><%= result.quizzes %></pre>
+
+    <a href="/api/result/history">⬅ Back to History</a>
+</body>
+</html>

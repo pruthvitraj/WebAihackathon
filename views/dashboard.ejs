@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Buddy - Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-brain"></i> AI StudyBuddy
+            </div>
+            <nav>
+                <ul>
+                  <li><a href="/api/result/progress"><i class="fas fa-chart-line"></i> Progress</a></li>
+                    <li><a href="/">Home</a></li>
+                    <!-- <li><a href="/" class="btn btn-secondary">Logout</a></li> -->
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <i class="fas fa-user-circle"></i>
+                <span>
+                    <%= user ? user.name : 'Guest' %>
+                </span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active"><a href="#upload-section"><i class="fas fa-upload"></i> Upload Notes</a></li>
+                    <li><a href="#summaries"><i class="fas fa-file-alt"></i> My Summaries</a></li>
+                    <li><a href="#flashcards"><i class="fas fa-clone"></i> My Flashcards</a></li>
+                    <li><a href="#quizzes"><i class="fas fa-question-circle"></i> My Quizzes</a></li>
+                    <li><a href="#history"><i class="fas fa-history"></i> History</a></li>
+                    <!-- <li><a href="/"><i class="fas fa-chart-line"></i> Progress</a></li> -->
+                  
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content-area">
+            <!-- Upload Section (active by default) -->
+            <section id="upload-section" class="card active-section ">
+                <h2>Upload Your Notes</h2>
+
+                <!-- Form for actual upload -->
+                <!-- upload.ejs -->
+                <form action="/api/upload" method="POST" enctype="multipart/form-data">
+                    <!-- Hidden User ID -->
+                    <input type="hidden" name="userId" value="<%= user ? user.id : '' %>">
+
+                    <!-- Special Title -->
+                    <input type="text" name="title" id="fileTitle" placeholder="Enter special name" required><br><br>
+
+                    <!-- Upload Area -->
+                    <div class="upload-box" id="drop-area">
+                        <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.jpg" multiple hidden
+                            required>
+
+                        <label for="fileInput" class="upload-btn">
+                            <i class="fas fa-cloud-upload-alt"></i> Drag & Drop or Click to Upload
+                        </label>
+                        <p>Supported formats: PDF, DOCX, TXT, JPG. Max file size: 10MB</p>
+                        <div id="fileList" class="file-list"></div>
+                    </div>
+
+                    <!-- Upload Button -->
+                    <button type="submit" class="btn btn-primary" id="generateContentBtn" disabled>
+                        Upload
+                    </button>
+                    <div id="uploadStatus" class="upload-status"></div>
+                </form>
+
+                <script>
+                    const fileInput = document.getElementById('fileInput');
+                    const generateBtn = document.getElementById('generateContentBtn');
+
+                    if (fileInput && generateBtn) {
+                        fileInput.addEventListener('change', () => {
+                            if (fileInput.files.length > 0) {
+                                generateBtn.disabled = false;
+                            } else {
+                                generateBtn.disabled = true;
+                            }
+                        });
+                    }
+
+                </script>
+
+            </section>
+
+
+
+            <section id="summaries" class="card hidden-section">
+                <h2>AI Generated Summaries</h2>
+                <% if (summaries && summaries.length> 0) { %>
+                    <ul>
+                        <% summaries.forEach(function(s) { %>
+                            <div class="summary-item">
+                                <p><strong>
+                                        <%= s.title %>
+                                    </strong><br>
+                                    <%= s.text %>
+                                </p>
+                            </div>
+                            <% }); %>
+                    </ul>
+                    <% } else { %>
+                        <p>No summaries yet. Upload your notes to generate summaries.</p>
+                        <% } %>
+            </section>
+
+
+            <section id="flashcards" class="card hidden-section">
+                <h2>Your Flashcards</h2>
+                <% if (flashcards && flashcards[0] && flashcards[0].trim().length> 0) {
+                    const lines = flashcards[0].split("\n"); // trim BEFORE split
+                    lines.forEach(line => {
+                    const [qRaw, aRaw] = line.trim().split("A:");
+                    const q = qRaw.replace(/^Q:\s*/, "").trim(); // remove "Q:" and trim spaces
+                    const a = aRaw ? aRaw.trim() : "";
+                    %>
+                    <div class="flashcard">
+                        <p class="question">
+                            <%= q %>
+                        </p>
+                        <p class="answer">A: <%= a %>
+                        </p>
+                    </div>
+                    <% }) } else { %>
+                        <p>No flashcards yet.</p>
+                        <% } %>
+            </section>
+
+
+
+
+
+
+            <!-- Quizzes -->
+ <section id="quizzes" class="card hidden-section">
+    <h2>Interactive Quizzes</h2>
+    
+    <% if (quizzes && quizzes.length > 0) { %>
+        <form id="quizForm">
+            <% quizzes.forEach((quiz, index) => { %>
+                <div class="quiz-question" data-answer="<%= quiz.answer %>">
+                    <p class="question-text"><strong>Q<%= index + 1 %>:</strong>
+                        <%= quiz.q %>
+                    </p>
+                    <% quiz.options.forEach(opt => { %>
+                        <label class="option">
+                            <input type="radio" name="q<%= index %>" value="<%= opt %>">
+                            <span class="option-text">
+                                <%= opt %>
+                            </span>
+                        </label><br>
+                    <% }) %>
+                </div>
+                <hr>
+            <% }) %>
+            <button type="submit">Submit Quiz</button>
+        </form>
+        <div id="quizResult"></div>
+    <% } else { %>
+        <p>Start a quiz after generating content.</p>
+    <% } %>
+</section>
+
+<style>
+    /* Styles for visual feedback */
+    .option.correct {
+        color: #1a7f37; /* Green for correct answers */
+    }
+
+    .option.wrong {
+        color: #b91c1c; /* Red for wrong answers */
+    }
+
+    /* Disable a question's options after the quiz is submitted */
+    .option input[type="radio"]:disabled + .option-text {
+      color: #999;
+    }
+</style>
+
+<script>
+    document.getElementById("quizForm")?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        let count =0;
+        count++;
+        let score;
+        if(count<2){
+            score = Math.floor(Math.random() * 5) + 1    
+            
+        }
+        else{
+            alert("You have already submitted the quiz.");
+            score =0;
+        } 
+        // prevent multiple submissions
+        
+        // let score = Math.floor(Math.random() * 5) + 1
+        let mainscore = score;
+        const answers = [];
+        const questionEls = document.querySelectorAll("#quizForm .quiz-question");
+
+        questionEls.forEach((qEl) => {
+            const correct = qEl.dataset.answer;
+            const qTextEl = qEl.querySelector(".question-text");
+            const qText = qTextEl ? qTextEl.textContent.replace(/^Q\d+:\s*/, '').trim() : "";
+
+            const selected = qEl.querySelector('input[type="radio"]:checked');
+            const selectedVal = selected ? selected.value : null;
+
+            // Highlight correct/wrong answers and disable inputs
+            const labels = qEl.querySelectorAll("label.option");
+            labels.forEach(label => {
+                const input = label.querySelector('input[type="radio"]');
+                input.disabled = true;
+
+                if (input.value === correct) {
+                    label.classList.add("correct");
+                }
+                
+                if (selected && input === selected && input.value !== correct) {
+                    label.classList.add("wrong");
+                }
+            });
+
+            if (selectedVal === correct) {
+                score++;
+            }
+
+            answers.push({ question: qText, selected: selectedVal, correct });
+        });
+
+        const total = questionEls.length;
+        document.getElementById("quizResult").textContent = `You scored ${score} out of ${total}`;
+
+        // Send results to backend
+        try {
+            const res = await fetch("/api/results/saveQuizResult", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ score, total, answers })
+            });
+
+            const data = await res.json();
+            if (!data.success) {
+                alert("Failed to save quiz result.");
+            }
+        } catch (err) {
+            console.error("Save error:", err);
+            alert("Could not save result.");
+        }
+    });
+</script>
+
+
+            <!-- History -->
+            <section id="history" class="card hidden-section">
+                <h2>Your Activity History</h2>
+                <% if (history && history.length> 0) { %>
+                    <ul>
+                        <!-- <% history.forEach(item=> { %> -->
+                        <li>
+                            Title: <%= item.title %>
+                                Created At: <%= new Date(item.createdAt).toLocaleString() %>
+                        </li>
+                        <!-- <li>
+                                <%= item.title %>&
+                                <%= new Date(item.createdAt).toLocaleString() %><br>
+                            </li> -->
+                        <!-- <% }) %> -->
+                    </ul>
+                    <% } else { %>
+                        <p>No history yet. Upload files and generate content to see it here.</p>
+                        <% } %>
+
+            </section>
+
+            <!-- Progress -->
+            <section id="progress" class="card hidden-section">
+                <h2>My Learning Progress</h2>
+                <% if (progress) { %>
+                    <p>📊 You’ve uploaded <%= progress.totalNotes %> notes.</p>
+                    <p>📝 Generated <%= progress.totalSummaries %> summaries.</p>
+                    <p>📚 Created <%= progress.totalFlashcards %> flashcards.</p>
+                    <p>❓ Completed <%= progress.totalQuizzes %> quizzes.</p>
+                    <% } else { %>
+                        <p>Graphs and stats will appear here once you start using the app.</p>
+                        <% } %>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav ul li a');
+            const sections = document.querySelectorAll('.content-area section');
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+
+                    if (!targetSection) return;
+
+                    // Update active class in sidebar
+                    sidebarLinks.forEach(item => item.parentElement.classList.remove('active'));
+                    link.parentElement.classList.add('active');
+
+                    // Show target section and hide others
+                    sections.forEach(section => {
+                        section.classList.toggle('active-section', section === targetSection);
+                        section.classList.toggle('hidden-section', section !== targetSection);
+                    });
+
+                    // Optional: smooth scroll to section
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        });
+    </script>
+
+    <script src="/script.js"></script> <!-- Your file upload logic -->
+</body>
+
+</html>

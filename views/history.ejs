@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results History</title>
+</head>
+<body>
+    <h1>📜 Results History</h1>
+
+    <% if (results.length === 0) { %>
+        <p>No results yet.</p>
+    <% } else { %>
+        <ul>
+            <% results.forEach(result => { %>
+                <li>
+                    <a href="/api/result/<%= result._id %>">
+                        <%= result.title %> (Generated: <%= result.createdAt.toDateString() %>)
+                    </a>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+</body>
+</html>

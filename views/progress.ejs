@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Progress Chart - AI StudyBuddy</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: #1a1a2e; /* Dark background */
+            color: #e0e0e0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #0f0f1c; /* Darker sidebar */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            color: #e0e0e0;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .sidebar .logo img {
+            width: 30px;
+            margin-right: 10px;
+        }
+
+        .sidebar .profile-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #8a2be2; /* Purple */
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            color: #fff;
+            margin-bottom: 40px;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .sidebar nav li {
+            margin-bottom: 20px;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            color: #e0e0e0;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar nav a i {
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background-color: #8a2be2; /* Purple */
+            color: #fff;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .header .nav-links a:hover {
+            color: #8a2be2;
+        }
+
+        .header .logout-btn {
+            background-color: #8a2be2;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 20px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .header .logout-btn:hover {
+            background-color: #6a1aae;
+        }
+
+        .card {
+            background-color: #0f0f1c; /* Darker card background */
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #8a2be2; /* Purple border */
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(to right, transparent, #8a2be2, transparent) top,
+                linear-gradient(to right, transparent, #8a2be2, transparent) bottom,
+                linear-gradient(to bottom, transparent, #8a2be2, transparent) left,
+                linear-gradient(to bottom, transparent, #8a2be2, transparent) right;
+            background-size: 100% 1px, 100% 1px, 1px 100%, 1px 100%;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-header h2 {
+            color: #e0e0e0;
+            font-size: 1.8em;
+            margin: 0;
+            margin-bottom: 5px;
+        }
+
+        .card-header .underline {
+            width: 80px;
+            height: 3px;
+            background-color: #8a2be2; /* Purple underline */
+        }
+
+        .back-button {
+            background-color: #8a2be2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #6a1aae;
+        }
+
+        canvas {
+            background-color: #0f0f1c; /* Ensure canvas background matches card */
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        /* Chart.js specific styling */
+        .chart-container {
+            position: relative;
+            height: 400px; /* Adjust height as needed */
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Glowing effect for chart elements (simulated with box-shadow) */
+        .chartjs-render-monitor {
+            filter: drop-shadow(0 0 5px rgba(138, 43, 226, 0.7)); /* Purple glow */
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <img src="https://i.ibb.co/hL4g1B3/AI-Study-Buddy.png" alt="AI StudyBuddy Logo"> <!-- Replace with your logo image -->
+            AI StudyBuddy
+        </div>
+        <div class="profile-icon">
+            <i class="fas fa-user"></i>
+        </div>
+        <nav>
+            <ul>
+                <!-- <li><a href="#" class="active"><i class="fas fa-upload"></i> Upload Notes</a></li>
+                <li><a href="#"><i class="fas fa-file-alt"></i> My Summaries</a></li>
+                <li><a href="#"><i class="fas fa-sticky-note"></i> My Flashcards</a></li>
+                <li><a href="#"><i class="fas fa-question-circle"></i> My Quizzes</a></li>
+                <li><a href="#"><i class="fas fa-history"></i> History</a></li> -->
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="nav-links">
+                <a href="/">back</a>
+                <!-- <a href="">Progress</a> -->
+                <a href="/">Home</a>
+            </div>
+            <!-- <button class="logout-btn">LOGOUT</button> -->
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Quiz Progress Chart</h2>
+                <div class="underline"></div>
+            </div>
+            <a href="/"><button class="back-button">back</button></a>
+            <div class="chart-container">
+                <canvas id="quizChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Hardcoded quiz data
+        const quizTitles = ["Quiz 1", "Quiz 2", "Quiz 3", "Quiz 4", "Quiz 5"];
+        const quizScores = [3, 5, 4, 2, 5]; // Scores out of 5
+
+        const ctx = document.getElementById('quizChart').getContext('2d');
+        const quizChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: quizTitles,
+                datasets: [{
+                    label: 'Score (out of 5)',
+                    data: quizScores,
+                    backgroundColor: 'rgba(138, 43, 226, 0.6)', /* Purple bars */
+                    borderColor: 'rgba(138, 43, 226, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5, /* Rounded corners for bars */
+                    hoverBackgroundColor: 'rgba(138, 43, 226, 0.8)',
+                    hoverBorderColor: 'rgba(138, 43, 226, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)', /* Lighter grid lines */
+                            borderColor: 'rgba(255, 255, 255, 0.2)'
+                        },
+                        ticks: {
+                            color: '#e0e0e0' /* White text for ticks */
+                        },
+                        title: {
+                            display: true,
+                            text: 'Score (out of 5)',
+                            color: '#e0e0e0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            borderColor: 'rgba(255, 255, 255, 0.2)'
+                        },
+                        ticks: {
+                            color: '#e0e0e0'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Quiz (out 5)',
+                            color: '#e0e0e0'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false, /* Hide legend */
+                        labels: {
+                            color: '#e0e0e0'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleColor: '#e0e0e0',
+                        bodyColor: '#e0e0e0'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

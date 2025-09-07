@@ -1,0 +1,299 @@
+/* ==================== Base & Utilities ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    color: #e0e0e0;
+    background: #1a1a2e;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+a {
+    color: #8D5EE3;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #be99fd;
+}
+
+/* ==================== Buttons ==================== */
+.btn {
+    display: inline-block;
+    background: #8D5EE3;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: background 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #be99fd;
+}
+
+.btn-secondary {
+    background: #393e46;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #5a5f68;
+}
+
+/* ==================== Navbar ==================== */
+.navbar {
+    background: #16213e;
+    padding: 15px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar .logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #e0e0e0;
+}
+
+.navbar nav ul {
+    list-style: none;
+    display: flex;
+}
+
+.navbar nav ul li {
+    margin-left: 25px;
+}
+
+.navbar nav ul li a {
+    color: #e0e0e0;
+    font-weight: 400;
+    padding: 5px 0;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.navbar nav ul li a.active,
+.navbar nav ul li a:hover {
+    color: #8D5EE3;
+}
+
+/* ==================== App Layout ==================== */
+.app-container {
+    display: flex;
+    min-height: calc(100vh - 70px);
+    background: #1a1a2e;
+}
+
+.sidebar {
+    width: 250px;
+    background: #16213e;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #2a3455;
+}
+
+.user-profile i {
+    font-size: 2.5rem;
+    color: #8D5EE3;
+    margin-right: 10px;
+}
+
+.user-profile span {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+}
+
+.sidebar-nav ul li {
+    margin-bottom: 10px;
+}
+
+.sidebar-nav ul li a {
+    display: block;
+    padding: 12px 15px;
+    color: #b0b0b0;
+    border-radius: 5px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-nav ul li a i {
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.sidebar-nav ul li a:hover,
+.sidebar-nav ul li.active a {
+    background: #2a3455;
+    color: #fff;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 40px;
+    background: #1a1a2e;
+}
+
+/* ==================== Content Cards ==================== */
+.card {
+    background: #16213e;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    margin: 0 auto 30px; /* Center horizontally with margin */
+}
+
+.card h2 {
+    font-size: 2rem;
+    margin-bottom: 25px;
+    color: #fff;
+    border-bottom: 2px solid #8D5EE3;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+/* ==================== Visibility Classes ==================== */
+.hidden-section {
+    display: none;
+}
+
+.active-section {
+    display: block;
+}
+
+/* ==================== Specific Section Styles ==================== */
+.upload-box {
+    border: 3px dashed #8D5EE3;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 30px;
+    background: #2a3455;
+    cursor: pointer;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.upload-box:hover {
+    background: #393e46;
+    border-color: #be99fd;
+}
+
+/* Ensure text inside AI sections wraps and looks clean */
+.card pre,
+.card p,
+.card li {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+/* .flashcard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.flashcard {
+    background: #1a1b3c;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    color: #fff;
+    line-height: 1.6;
+    transition: transform 0.2s ease;
+}
+
+.flashcard:hover {
+    transform: translateY(-3px);
+    background: #24254a;
+} */
+/* Style for the summary heading and content */
+.card h2 + p {
+    margin-top: 0; /* Removes space after the heading */
+}
+
+.summary-item strong,
+.summary-item p {
+    margin: 0;
+    padding: 0;
+    display: inline; /* This is key to getting the text to flow inline */
+}
+
+.summary-item p {
+    /* To remove the literal '**' */
+    font-weight: normal; 
+}
+
+#flashcards {
+        margin-top: 20px;
+        padding: 20px;
+        background: #0f172a; /* Dark navy */
+        border-radius: 16px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    }
+
+    #flashcards h2 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        color: #ffffff;
+        border-bottom: 2px solid #8b5cf6;
+        padding-bottom: 8px;
+    }
+
+    .flashcard {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .flashcard:hover {
+        transform: translateY(-3px);
+        box-shadow: 0px 6px 20px rgba(0,0,0,0.4);
+    }
+
+    .flashcard .question {
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 6px;
+    }
+
+    .flashcard .answer {
+        color: #cbd5e1;
+        font-size: 0.95rem;
+    }

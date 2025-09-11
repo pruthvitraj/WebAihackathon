@@ -1,0 +1,183 @@
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarLinks = document.querySelectorAll('.sidebar-nav ul li a');
+      const sections = document.querySelectorAll('.content-area section');
+      const fileInput = document.getElementById('fileInput');
+      const generateBtn = document.getElementById('generateContentBtn');
+      const fileTitleInput = document.getElementById('fileTitle');
+      const uploadForm = document.getElementById('uploadForm');
+      const uploadStatus = document.getElementById('uploadStatus');
+      const dropArea = document.getElementById('drop-area');
+      const fileList = document.getElementById('fileList');
+
+      // --- Sidebar Navigation & Accessibility ---
+      function updateActiveSection(targetId) {
+        sections.forEach(section => {
+          const isActive = section.id === targetId;
+          section.classList.toggle('active-section', isActive);
+          section.classList.toggle('hidden-section', !isActive);
+          section.setAttribute('aria-hidden', !isActive);
+        });
+
+        sidebarLinks.forEach(link => {
+          const isLinkActive = link.getAttribute('href').substring(1) === targetId;
+          link.parentElement.classList.toggle('active', isLinkActive);
+          link.setAttribute('aria-selected', isLinkActive);
+          link.setAttribute('tabindex', isLinkActive ? '0' : '-1'); // Make only active tab focusable
+        });
+      }
+
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('href').substring(1);
+          if (document.getElementById(targetId)) {
+            updateActiveSection(targetId);
+            window.location.hash = targetId; // Update URL hash
+            document.getElementById(targetId).scrollIntoView({
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Handle URL hash on page load
+      const initialHash = window.location.hash.substring(1);
+      if (initialHash && document.getElementById(initialHash)) {
+        updateActiveSection(initialHash);
+      } else {
+        // Default to the upload section
+        updateActiveSection('upload-section');
+      }
+
+      // --- Upload Button & Drag-and-Drop Logic ---
+      let selectedFiles = []; // To store files for drag-and-drop
+
+      function updateUploadButtonState() {
+        const hasFiles = (fileInput.files && fileInput.files.length > 0) || (selectedFiles.length > 0);
+        const titleFilled = fileTitleInput.value.trim().length > 0;
+        generateBtn.disabled = !(hasFiles && titleFilled);
+      }
+
+      function displayFiles() {
+        fileList.innerHTML = ''; // Clear previous list
+        let filesToDisplay = [];
+
+        // Prioritize files from direct input, then from drag-and-drop
+        if (fileInput.files.length > 0) {
+          filesToDisplay = Array.from(fileInput.files);
+        } else if (selectedFiles.length > 0) {
+          filesToDisplay = selectedFiles;
+        }
+
+        if (filesToDisplay.length > 0) {
+          const ul = document.createElement('ul');
+          filesToDisplay.forEach(file => {
+            const li = document.createElement('li');
+            li.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            ul.appendChild(li);
+          });
+          fileList.appendChild(ul);
+        }
+      }
+
+
+      fileInput.addEventListener('change', () => {
+        selectedFiles = Array.from(fileInput.files); // Update selectedFiles if using direct input
+        displayFiles();
+        updateUploadButtonState();
+      });
+      fileTitleInput.addEventListener('input', updateUploadButtonState);
+
+      // Drag and Drop functionality
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false); // Prevent default on body too
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+      });
+
+      dropArea.addEventListener('drop', handleDrop, false);
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        // Set files to the hidden input to be sent with the form
+        fileInput.files = files;
+        selectedFiles = Array.from(files); // Update internal state for display
+        displayFiles();
+        updateUploadButtonState();
+      }
+
+      uploadForm.addEventListener('submit', function (e) {
+        if (generateBtn.disabled) {
+          e.preventDefault();
+          return;
+        }
+        generateBtn.classList.add('loading');
+        generateBtn.innerHTML = 'Generating Content...';
+        generateBtn.disabled = true;
+        uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing your notes. This may take a moment...';
+        uploadStatus.classList.add('show');
+      });
+
+      // --- Quiz Submission Logic ---
+      const quizForm = document.getElementById("quizForm");
+      if (quizForm) {
+        quizForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const questionEls = document.querySelectorAll("#quizForm .quiz-question");
+          let score = 0;
+          let resultHtml = '<h3>Quiz Results</h3>';
+
+          questionEls.forEach((qEl, i) => {
+            const correct = qEl.dataset.answer ? qEl.dataset.answer.trim() : "";
+            const selectedOption = qEl.querySelector(`input[name="q${i}"]:checked`);
+            const userChoice = selectedOption ? selectedOption.value.trim() : 'No answer';
+            const isCorrect = userChoice === correct;
+
+            if (isCorrect) {
+              score++;
+            }
+
+            // Add classes for visual feedback
+            qEl.querySelectorAll('input[type="radio"]').forEach(radio => {
+              radio.disabled = true; // Disable options after submission
+              const optionTextSpan = radio.nextElementSibling;
+              if (optionTextSpan) {
+                if (radio.value.trim() === correct) {
+                  optionTextSpan.classList.add('correct');
+                } else if (radio.checked) { // If user selected this and it's wrong
+                  optionTextSpan.classList.add('incorrect');
+                }
+              }
+            });
+
+
+            resultHtml += `<div class="quiz-result-item ${isCorrect ? 'correct-answer' : 'incorrect-answer'}">
+                            <p><strong>Q${i + 1}:</strong> ${qEl.querySelector('.question-text').textContent.trim().replace(/^Q\d+:\s*/, "")}</p>
+                            <p>Your Answer: ${userChoice}</p>
+                            <p>Correct Answer: ${correct}</p>
+                        </div>`;
+          });
+
+          resultHtml += `<p><strong>Your Final Score: ${score} out of ${questionEls.length}</strong></p>`;
+          document.getElementById("quizResult").innerHTML = resultHtml;
+          this.querySelector('button[type="submit"]').disabled = true; // Disable submit button
+        });
+      }
+    });
+  </script>

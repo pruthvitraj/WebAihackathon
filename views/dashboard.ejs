@@ -2,338 +2,355 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Study Buddy - Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Study Buddy - Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
-    <header class="navbar">
-        <div class="container">
-            <div class="logo">
-                <i class="fas fa-brain"></i> AI StudyBuddy
-            </div>
-            <nav>
-                <ul>
-                  <li><a href="/api/result/progress"><i class="fas fa-chart-line"></i> Progress</a></li>
-                    <li><a href="/">Home</a></li>
-                    <!-- <li><a href="/" class="btn btn-secondary">Logout</a></li> -->
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <div class="app-container">
-        <aside class="sidebar">
-            <div class="user-profile">
-                <i class="fas fa-user-circle"></i>
-                <span>
-                    <%= user ? user.name : 'Guest' %>
-                </span>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li class="active"><a href="#upload-section"><i class="fas fa-upload"></i> Upload Notes</a></li>
-                    <li><a href="#summaries"><i class="fas fa-file-alt"></i> My Summaries</a></li>
-                    <li><a href="#flashcards"><i class="fas fa-clone"></i> My Flashcards</a></li>
-                    <li><a href="#quizzes"><i class="fas fa-question-circle"></i> My Quizzes</a></li>
-                    <li><a href="#history"><i class="fas fa-history"></i> History</a></li>
-                    <!-- <li><a href="/"><i class="fas fa-chart-line"></i> Progress</a></li> -->
-                  
-                </ul>
-            </nav>
-        </aside>
-
-        <main class="content-area">
-            <!-- Upload Section (active by default) -->
-            <section id="upload-section" class="card active-section ">
-                <h2>Upload Your Notes</h2>
-
-                <!-- Form for actual upload -->
-                <!-- upload.ejs -->
-                <form action="/api/upload" method="POST" enctype="multipart/form-data">
-                    <!-- Hidden User ID -->
-                    <input type="hidden" name="userId" value="<%= user ? user.id : '' %>">
-
-                    <!-- Special Title -->
-                    <input type="text" name="title" id="fileTitle" placeholder="Enter special name" required><br><br>
-
-                    <!-- Upload Area -->
-                    <div class="upload-box" id="drop-area">
-                        <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.jpg" multiple hidden
-                            required>
-
-                        <label for="fileInput" class="upload-btn">
-                            <i class="fas fa-cloud-upload-alt"></i> Drag & Drop or Click to Upload
-                        </label>
-                        <p>Supported formats: PDF, DOCX, TXT, JPG. Max file size: 10MB</p>
-                        <div id="fileList" class="file-list"></div>
-                    </div>
-
-                    <!-- Upload Button -->
-                    <button type="submit" class="btn btn-primary" id="generateContentBtn" disabled>
-                        Upload
-                    </button>
-                    <div id="uploadStatus" class="upload-status"></div>
-                </form>
-
-                <script>
-                    const fileInput = document.getElementById('fileInput');
-                    const generateBtn = document.getElementById('generateContentBtn');
-
-                    if (fileInput && generateBtn) {
-                        fileInput.addEventListener('change', () => {
-                            if (fileInput.files.length > 0) {
-                                generateBtn.disabled = false;
-                            } else {
-                                generateBtn.disabled = true;
-                            }
-                        });
-                    }
-
-                </script>
-
-            </section>
-
-
-
-            <section id="summaries" class="card hidden-section">
-                <h2>AI Generated Summaries</h2>
-                <% if (summaries && summaries.length> 0) { %>
-                    <ul>
-                        <% summaries.forEach(function(s) { %>
-                            <div class="summary-item">
-                                <p><strong>
-                                        <%= s.title %>
-                                    </strong><br>
-                                    <%= s.text %>
-                                </p>
-                            </div>
-                            <% }); %>
-                    </ul>
-                    <% } else { %>
-                        <p>No summaries yet. Upload your notes to generate summaries.</p>
-                        <% } %>
-            </section>
-
-
-            <section id="flashcards" class="card hidden-section">
-                <h2>Your Flashcards</h2>
-                <% if (flashcards && flashcards[0] && flashcards[0].trim().length> 0) {
-                    const lines = flashcards[0].split("\n"); // trim BEFORE split
-                    lines.forEach(line => {
-                    const [qRaw, aRaw] = line.trim().split("A:");
-                    const q = qRaw.replace(/^Q:\s*/, "").trim(); // remove "Q:" and trim spaces
-                    const a = aRaw ? aRaw.trim() : "";
-                    %>
-                    <div class="flashcard">
-                        <p class="question">
-                            <%= q %>
-                        </p>
-                        <p class="answer">A: <%= a %>
-                        </p>
-                    </div>
-                    <% }) } else { %>
-                        <p>No flashcards yet.</p>
-                        <% } %>
-            </section>
-
-
-
-
-
-
-            <!-- Quizzes -->
- <section id="quizzes" class="card hidden-section">
-    <h2>Interactive Quizzes</h2>
-    
-    <% if (quizzes && quizzes.length > 0) { %>
-        <form id="quizForm">
-            <% quizzes.forEach((quiz, index) => { %>
-                <div class="quiz-question" data-answer="<%= quiz.answer %>">
-                    <p class="question-text"><strong>Q<%= index + 1 %>:</strong>
-                        <%= quiz.q %>
-                    </p>
-                    <% quiz.options.forEach(opt => { %>
-                        <label class="option">
-                            <input type="radio" name="q<%= index %>" value="<%= opt %>">
-                            <span class="option-text">
-                                <%= opt %>
-                            </span>
-                        </label><br>
-                    <% }) %>
-                </div>
-                <hr>
-            <% }) %>
-            <button type="submit">Submit Quiz</button>
-        </form>
-        <div id="quizResult"></div>
-    <% } else { %>
-        <p>Start a quiz after generating content.</p>
-    <% } %>
-</section>
-
-<style>
-    /* Styles for visual feedback */
-    .option.correct {
-        color: #1a7f37; /* Green for correct answers */
-    }
-
-    .option.wrong {
-        color: #b91c1c; /* Red for wrong answers */
-    }
-
-    /* Disable a question's options after the quiz is submitted */
-    .option input[type="radio"]:disabled + .option-text {
-      color: #999;
-    }
-</style>
-
-<script>
-    document.getElementById("quizForm")?.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        let count =0;
-        count++;
-        let score;
-        if(count<2){
-            score = Math.floor(Math.random() * 5) + 1    
-            
-        }
-        else{
-            alert("You have already submitted the quiz.");
-            score =0;
-        } 
-        // prevent multiple submissions
-        
-        // let score = Math.floor(Math.random() * 5) + 1
-        let mainscore = score;
-        const answers = [];
-        const questionEls = document.querySelectorAll("#quizForm .quiz-question");
-
-        questionEls.forEach((qEl) => {
-            const correct = qEl.dataset.answer;
-            const qTextEl = qEl.querySelector(".question-text");
-            const qText = qTextEl ? qTextEl.textContent.replace(/^Q\d+:\s*/, '').trim() : "";
-
-            const selected = qEl.querySelector('input[type="radio"]:checked');
-            const selectedVal = selected ? selected.value : null;
-
-            // Highlight correct/wrong answers and disable inputs
-            const labels = qEl.querySelectorAll("label.option");
-            labels.forEach(label => {
-                const input = label.querySelector('input[type="radio"]');
-                input.disabled = true;
-
-                if (input.value === correct) {
-                    label.classList.add("correct");
-                }
-                
-                if (selected && input === selected && input.value !== correct) {
-                    label.classList.add("wrong");
-                }
-            });
-
-            if (selectedVal === correct) {
-                score++;
-            }
-
-            answers.push({ question: qText, selected: selectedVal, correct });
-        });
-
-        const total = questionEls.length;
-        document.getElementById("quizResult").textContent = `You scored ${score} out of ${total}`;
-
-        // Send results to backend
-        try {
-            const res = await fetch("/api/results/saveQuizResult", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ score, total, answers })
-            });
-
-            const data = await res.json();
-            if (!data.success) {
-                alert("Failed to save quiz result.");
-            }
-        } catch (err) {
-            console.error("Save error:", err);
-            alert("Could not save result.");
-        }
-    });
-</script>
-
-
-            <!-- History -->
-            <section id="history" class="card hidden-section">
-                <h2>Your Activity History</h2>
-                <% if (history && history.length> 0) { %>
-                    <ul>
-                        <!-- <% history.forEach(item=> { %> -->
-                        <li>
-                            Title: <%= item.title %>
-                                Created At: <%= new Date(item.createdAt).toLocaleString() %>
-                        </li>
-                        <!-- <li>
-                                <%= item.title %>&
-                                <%= new Date(item.createdAt).toLocaleString() %><br>
-                            </li> -->
-                        <!-- <% }) %> -->
-                    </ul>
-                    <% } else { %>
-                        <p>No history yet. Upload files and generate content to see it here.</p>
-                        <% } %>
-
-            </section>
-
-            <!-- Progress -->
-            <section id="progress" class="card hidden-section">
-                <h2>My Learning Progress</h2>
-                <% if (progress) { %>
-                    <p>📊 You’ve uploaded <%= progress.totalNotes %> notes.</p>
-                    <p>📝 Generated <%= progress.totalSummaries %> summaries.</p>
-                    <p>📚 Created <%= progress.totalFlashcards %> flashcards.</p>
-                    <p>❓ Completed <%= progress.totalQuizzes %> quizzes.</p>
-                    <% } else { %>
-                        <p>Graphs and stats will appear here once you start using the app.</p>
-                        <% } %>
-            </section>
-        </main>
+  <header class="navbar">
+    <div class="container">
+      <div class="logo">
+        <i class="fas fa-brain"></i> AI StudyBuddy
+      </div>
+      <nav>
+        <ul role="tablist">
+          <!-- <li role="presentation"><a href="/api/result/progress" role="tab" aria-selected="false"><i
+                class="fas fa-chart-line"></i> Progress</a></li> -->
+          <li role="presentation"><a href="/" role="tab" aria-selected="false">Home</a></li>
+        </ul>
+      </nav>
     </div>
+  </header>
 
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="user-profile">
+        <i class="fas fa-user-circle"></i>
+        <span><%= user ? user.name : 'Guest' %></span>
+      </div>
+      <nav class="sidebar-nav">
+        <ul role="tablist">
+          <li class="active"><a href="#upload-section" id="tab-upload" role="tab"><i class="fas fa-upload"></i> Upload Notes</a></li>
+          <li><a href="#summaries" id="tab-summaries" role="tab"><i class="fas fa-file-alt"></i> My Summaries</a></li>
+          <li><a href="#flashcards" id="tab-flashcards" role="tab"><i class="fas fa-clone"></i> My Flashcards</a></li>
+          <li><a href="#quizzes" id="tab-quizzes" role="tab"><i class="fas fa-question-circle"></i> My Quizzes</a></li>
+          <!-- <li><a href="#history" id="tab-history" role="tab"><i class="fas fa-history"></i> History</a></li> -->
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="content-area">
+
+      <!-- Upload Section -->
+      <section id="upload-section" class="card active-section">
+        <h2>Upload Your Notes</h2>
+        <form action="/api/upload" method="POST" enctype="multipart/form-data" id="uploadForm">
+          <input type="hidden" name="userId" value="<%= user ? user.id : '' %>">
+          <input type="text" name="title" id="fileTitle" placeholder="Enter special name for your notes" required>
+          <div class="upload-box" id="drop-area">
+            <input type="file" name="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.jpg" multiple hidden>
+            <label for="fileInput" class="upload-btn">
+              <i class="fas fa-cloud-upload-alt"></i> Drag & Drop or Click to Upload
+            </label>
+            <p>Supported formats: PDF, DOCX, TXT, JPG. Max file size: 10MB</p>
+            <div id="fileList" class="file-list"></div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="generateContentBtn" disabled>
+            Upload & Generate Content
+          </button>
+          <div id="uploadStatus" class="upload-status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <!-- Summaries -->
+      <section id="summaries" class="card hidden-section">
+        <h2>AI Generated Summaries</h2>
+        <% if (summaries && summaries.length > 0) { %>
+          <% summaries.forEach(function(s) { %>
+            <div class="summary-item">
+              <strong><%= s.title.trim() %></strong>
+              <p><%= s.text.trim() %></p>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <p>No summaries yet. Upload your notes to generate summaries.</p>
+        <% } %>
+      </section>
+
+      <!-- Flashcards -->
+      <section id="flashcards" class="card hidden-section">
+        <h2>My Flashcards</h2>
+        <% if (flashcards && flashcards.length > 0) { %>
+          <div class="flashcard-grid">
+            <% flashcards.forEach(function(f) { 
+              const cards = f.split(/Q:/).filter(Boolean); 
+              cards.forEach(function(card) { 
+                let q="", a=""; 
+                if (card.includes("A:")) { 
+                  const parts = card.split("A:"); 
+                  q = parts[0].trim(); 
+                  a = parts[1].trim(); 
+                } 
+            %>
+              <% if (q && a) { %>
+                <div class="flashcard-container">
+                  <div class="flashcard-inner">
+                    <div class="flashcard-front"><p>Q: <%= q %></p></div>
+                    <div class="flashcard-back"><p>A: <%= a %></p></div>
+                  </div>
+                </div>
+              <% } %>
+            <% }); }); %>
+          </div>
+        <% } else { %>
+          <p>No flashcards yet. Upload your notes to generate flashcards.</p>
+        <% } %>
+      </section>
+
+      <!-- Quizzes -->
+      <section id="quizzes" class="card hidden-section">
+        <h2>Interactive Quizzes</h2>
+        <% if (quizzes && quizzes.length > 0) { %>
+          <form id="quizForm">
+            <% quizzes.forEach((quiz, index) => { %>
+              <div class="quiz-question" data-answer="<%= quiz.answer.trim() %>">
+                <p class="question-text"><strong>Q<%= index + 1 %>:</strong> <%= quiz.q.trim() %></p>
+                <% quiz.options.forEach((opt, optIndex) => { %>
+                  <label class="option">
+                    <input type="radio" name="q<%= index %>" value="<%= opt.trim() %>">
+                    <span class="option-text"><%= opt.trim() %></span>
+                  </label><br>
+                <% }) %>
+              </div>
+            <% }) %>
+            <button type="submit" class="btn btn-primary">Submit Quiz</button>
+          </form>
+          <div id="quizResult" aria-live="polite"></div>
+        <% } else { %>
+          <p>Start a quiz after generating content.</p>
+        <% } %>
+      </section>
+
+      <!-- History -->
+      <!-- <section id="history" class="card hidden-section">
+        <h2>Your Activity History</h2>
+        <% if (history && history.length > 0) { %>
+          <ul>
+            <% history.forEach(item => { %>
+              <li>
+                <strong><%= item.title.trim() %></strong><br>
+                Created At: <%= new Date(item.createdAt).toLocaleString() %>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p>No history yet. Upload files and generate content to see it here.</p>
+        <% } %>
+      </section> -->
+
+      <!-- Progress -->
+      <!-- <section id="progress" class="card hidden-section">
+        <h2>My Learning Progress</h2>
+        <% if (progress) { %>
+          <p><i class="fas fa-upload"></i> You’ve uploaded <%= progress.totalNotes %> notes.</p>
+          <p><i class="fas fa-file-alt"></i> Generated <%= progress.totalSummaries %> summaries.</p>
+          <p><i class="fas fa-clone"></i> Created <%= progress.totalFlashcards %> flashcards.</p>
+          <p><i class="fas fa-question-circle"></i> Completed <%= progress.totalQuizzes %> quizzes.</p>
+        <% } else { %>
+          <p>Graphs and stats will appear here once you start using the app.</p>
+        <% } %>
+      </section> -->
+
+    </main>
+  </div>
+
+  <script src="/script.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const sidebarLinks = document.querySelectorAll('.sidebar-nav ul li a');
-            const sections = document.querySelectorAll('.content-area section');
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarLinks = document.querySelectorAll('.sidebar-nav ul li a');
+      const sections = document.querySelectorAll('.content-area section');
+      const fileInput = document.getElementById('fileInput');
+      const generateBtn = document.getElementById('generateContentBtn');
+      const fileTitleInput = document.getElementById('fileTitle');
+      const uploadForm = document.getElementById('uploadForm');
+      const uploadStatus = document.getElementById('uploadStatus');
+      const dropArea = document.getElementById('drop-area');
+      const fileList = document.getElementById('fileList');
 
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetId = link.getAttribute('href').substring(1);
-                    const targetSection = document.getElementById(targetId);
-
-                    if (!targetSection) return;
-
-                    // Update active class in sidebar
-                    sidebarLinks.forEach(item => item.parentElement.classList.remove('active'));
-                    link.parentElement.classList.add('active');
-
-                    // Show target section and hide others
-                    sections.forEach(section => {
-                        section.classList.toggle('active-section', section === targetSection);
-                        section.classList.toggle('hidden-section', section !== targetSection);
-                    });
-
-                    // Optional: smooth scroll to section
-                    targetSection.scrollIntoView({ behavior: 'smooth' });
-                });
-            });
+      // --- Sidebar Navigation & Accessibility ---
+      function updateActiveSection(targetId) {
+        sections.forEach(section => {
+          const isActive = section.id === targetId;
+          section.classList.toggle('active-section', isActive);
+          section.classList.toggle('hidden-section', !isActive);
+          section.setAttribute('aria-hidden', !isActive);
         });
-    </script>
 
-    <script src="/script.js"></script> <!-- Your file upload logic -->
+        sidebarLinks.forEach(link => {
+          const isLinkActive = link.getAttribute('href').substring(1) === targetId;
+          link.parentElement.classList.toggle('active', isLinkActive);
+          link.setAttribute('aria-selected', isLinkActive);
+          link.setAttribute('tabindex', isLinkActive ? '0' : '-1'); // Make only active tab focusable
+        });
+      }
+
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('href').substring(1);
+          if (document.getElementById(targetId)) {
+            updateActiveSection(targetId);
+            window.location.hash = targetId; // Update URL hash
+            document.getElementById(targetId).scrollIntoView({
+              behavior: 'smooth'
+            });
+          }
+        });
+      });
+
+      // Handle URL hash on page load
+      const initialHash = window.location.hash.substring(1);
+      if (initialHash && document.getElementById(initialHash)) {
+        updateActiveSection(initialHash);
+      } else {
+        // Default to the upload section
+        updateActiveSection('upload-section');
+      }
+
+      // --- Upload Button & Drag-and-Drop Logic ---
+      let selectedFiles = []; // To store files for drag-and-drop
+
+      function updateUploadButtonState() {
+        const hasFiles = (fileInput.files && fileInput.files.length > 0) || (selectedFiles.length > 0);
+        const titleFilled = fileTitleInput.value.trim().length > 0;
+        generateBtn.disabled = !(hasFiles && titleFilled);
+      }
+
+      function displayFiles() {
+        fileList.innerHTML = ''; // Clear previous list
+        let filesToDisplay = [];
+
+        // Prioritize files from direct input, then from drag-and-drop
+        if (fileInput.files.length > 0) {
+          filesToDisplay = Array.from(fileInput.files);
+        } else if (selectedFiles.length > 0) {
+          filesToDisplay = selectedFiles;
+        }
+
+        if (filesToDisplay.length > 0) {
+          const ul = document.createElement('ul');
+          filesToDisplay.forEach(file => {
+            const li = document.createElement('li');
+            li.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            ul.appendChild(li);
+          });
+          fileList.appendChild(ul);
+        }
+      }
+
+
+      fileInput.addEventListener('change', () => {
+        selectedFiles = Array.from(fileInput.files); // Update selectedFiles if using direct input
+        displayFiles();
+        updateUploadButtonState();
+      });
+      fileTitleInput.addEventListener('input', updateUploadButtonState);
+
+      // Drag and Drop functionality
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false); // Prevent default on body too
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+      });
+
+      dropArea.addEventListener('drop', handleDrop, false);
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        // Set files to the hidden input to be sent with the form
+        fileInput.files = files;
+        selectedFiles = Array.from(files); // Update internal state for display
+        displayFiles();
+        updateUploadButtonState();
+      }
+
+      uploadForm.addEventListener('submit', function (e) {
+        if (generateBtn.disabled) {
+          e.preventDefault();
+          return;
+        }
+        generateBtn.classList.add('loading');
+        generateBtn.innerHTML = 'Generating Content...';
+        generateBtn.disabled = true;
+        uploadStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing your notes. This may take a moment...';
+        uploadStatus.classList.add('show');
+      });
+
+      // --- Quiz Submission Logic ---
+      const quizForm = document.getElementById("quizForm");
+      if (quizForm) {
+        quizForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const questionEls = document.querySelectorAll("#quizForm .quiz-question");
+          let score = 0;
+          let resultHtml = '<h3>Quiz Results</h3>';
+
+          questionEls.forEach((qEl, i) => {
+            const correct = qEl.dataset.answer ? qEl.dataset.answer.trim() : "";
+            const selectedOption = qEl.querySelector(`input[name="q${i}"]:checked`);
+            const userChoice = selectedOption ? selectedOption.value.trim() : 'No answer';
+            const isCorrect = userChoice === correct;
+
+            if (isCorrect) {
+              score++;
+            }
+
+            // Add classes for visual feedback
+            qEl.querySelectorAll('input[type="radio"]').forEach(radio => {
+              radio.disabled = true; // Disable options after submission
+              const optionTextSpan = radio.nextElementSibling;
+              if (optionTextSpan) {
+                if (radio.value.trim() === correct) {
+                  optionTextSpan.classList.add('correct');
+                } else if (radio.checked) { // If user selected this and it's wrong
+                  optionTextSpan.classList.add('incorrect');
+                }
+              }
+            });
+
+
+            resultHtml += `<div class="quiz-result-item ${isCorrect ? 'correct-answer' : 'incorrect-answer'}">
+                            <p><strong>Q${i + 1}:</strong> ${qEl.querySelector('.question-text').textContent.trim().replace(/^Q\d+:\s*/, "")}</p>
+                            <p>Your Answer: ${userChoice}</p>
+                            <p>Correct Answer: ${correct}</p>
+                        </div>`;
+          });
+
+          // resultHtml += `<p><strong>Your Final Score: ${score} out of ${questionEls.length}</strong></p>`;
+          document.getElementById("quizResult").innerHTML = resultHtml;
+          this.querySelector('button[type="submit"]').disabled = true; // Disable submit button
+        });
+      }
+    });
+  </script>
 </body>
-
 </html>
